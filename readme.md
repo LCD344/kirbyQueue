@@ -6,8 +6,6 @@
 
 This is a plugin to make a job queue for kirby CMS.
 
-![Screenshot](https://placehold.it/888x150?text=Screenshot)
-
 ## Installation
 
 ### 1. Clone or download
