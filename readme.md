@@ -1,8 +1,8 @@
 # Kirby Boiler Readme
 
-![Version](https://img.shields.io/badge/version-0.1.0-green.svg) ![License](https://img.shields.io/badge/license-MIT-green.svg) ![Kirby Version](https://img.shields.io/badge/Kirby-2.2.4%2B-red.svg)
+![Version](https://img.shields.io/badge/version-0.2.0-green.svg) ![License](https://img.shields.io/badge/license-MIT-green.svg) ![Kirby Version](https://img.shields.io/badge/Kirby-2.2.4%2B-red.svg)
 
-*Version 0.1.0*
+*Version 0.2.0*
 
 This is a plugin to make a job queue for kirby CMS.
 
@@ -58,6 +58,16 @@ class Job1 {
 }
 ```
 
+Alternatively you can define a job as a function as in
+
+
+```php
+\lcd344\KirbyQueue\Queue::define('job1', function($sleep,$wait) {
+  sleep($sleep);
+  echo $text;
+});
+```
+
 then to run the worker you just need to run `site/plugins/kirbyQueue/CLWorker.php` from commandline.
 
 This will create one worker that would work forever. This queue supports multiple workers working at the same time using the flock command.
@@ -71,8 +81,19 @@ Once you are done setting up the workers, usage would require you to dispatch a 
 for example:
 
 ```php
-Queue::dispatch(new Job1(uniqid()));
+\lcd344\KirbyQueue\Queue::dispatch(new Job1(uniqid()));
 ```
+
+or if the job was defined as a function you can do
+
+```php
+\lcd344\KirbyQueue\Queue::dispatch('job1',[
+  10,
+  'test'
+]);
+```
+
+the order of variables in the array corresponds to the functions variables as the function uses call_user_func_array to run it.
 
 ## Options
 
@@ -84,6 +105,12 @@ c::set('kirbyQueue.jobs.folder', 'path/to/jobs/folder'); // This will change the
 ```
 
 ## Changelog
+
+**0.2.0**
+
+- Added a way to make jobs as only a function
+- refactored code
+- added tracking for jobs failure
 
 **0.1.0**
 - Initial release

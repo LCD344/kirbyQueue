@@ -10,26 +10,56 @@ namespace lcd344\KirbyQueue;
 
 
 use c;
+use Error;
 use yaml;
-use Exception;
-use f;
-use Kirby;
 
 class Queue {
 
-	static public function dispatch($job) {
+	private static $actions = [];
+	/**
+	 * Defines an action to perform when job is worked on
+	 * @param  string    Name of the action
+	 * @param  Callable  Closure with the action
+	 */
 
-		$folder = c::get('kirbyQueue.queue.folder', kirby::instance()->roots()->site() . DS . 'queue');
+	public static function define($name, $action) {
+		static::$actions[$name] = $action;
+	}
+
+	public static function issetFunction($name) {
+		return isset(static::$actions[$name]);
+	}
+
+
+	public static function get($name) {
+		return static::$actions[$name];
+	}
+
+
+	static public function dispatch($job,$data = null) {
+
+		if(is_object($job)){
+			$data = ['job' => [
+				'added' => date('c'),
+				'type' => 'object',
+				'class' => serialize($job)
+			]];
+		} else {
+			$class = new Job($job,$data);
+			$data = ['job' => [
+				'added' => date('c'),
+				'type' => 'function',
+				'class' => serialize($class)
+			]];
+		}
+
+		$folder = c::get('kirbyQueue.queue.folder', kirby()->roots()->site() . DS . 'queue');
 		$file = $folder . DS . uniqid('job_') . '.yml';
 
-		$data = ['job' => [
-			'status' => 'active',
-			'class' => serialize($job)
-		]];
 
 
-		if (!f::write($file, yaml::encode($data))) {
-			throw new Exception("Can't write to queue file");
+		if (! yaml::write($file, $data)) {
+			throw new Error("Can't write to queue file");
 		}
 
 		return true;

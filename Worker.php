@@ -9,65 +9,99 @@
 namespace lcd344\KirbyQueue;
 
 
-use c;
-use dir;
+use Error;
+use Exception;
+use folder;
 use yaml;
 use f;
-use kirby;
 
 class Worker {
 
+	protected $folder;
+	protected $waitTime;
+
+	public function __construct($folder, $waitTime) {
+
+		$this->folder = $folder;
+		$this->waitTime = $waitTime;
+	}
+
 	public function work() {
 
-		$folder = c::get('kirbyQueue.queue.folder', kirby::instance()->roots()->site() . DS . 'queue');
-
 		while (true) {
-			$files = dir::read($folder);
-			$count = 3;
+			$folder = new folder($this->folder);
+			$files = array_values($folder->files(null, true));
+			$count = 0;
 			$lock = false;
-			while(!$lock && $count < count($files)+2) {
-				$filename = $folder . DS . $files[$count];
-				$file = fopen($filename,'r+');
-				if($file && filesize($filename) && strpos($files[$count],'.failed.yml') == false){
-					$lock = flock($file, LOCK_EX  | LOCK_NB);
-				} else {
-					$lock = false;
-				}
+			while (!$lock && $count < count($files)) {
+				$filename = $this->folder . DS . $files[$count];
+				$file = fopen($filename, 'r+');
+				$lock = $this->getLock($file, $filename);
 
 				if ($lock) {
-					$content = fread($file, filesize($filename));
-					$job = yaml::decode($content);
-					try {
-						if($job['job']['status'] == 'active'){
-							$task = unserialize($job['job']['class']);
-							if($task->handle() === false){
-								$this->failedJob($file,$filename,$job);
-							} else {
-								ftruncate($file,0);
-								fclose($file);
-								unlink($filename);
-							}
-						}
-					} catch (\Exception $exception){
-						$this->failedJob($file,$filename,$job);
-					}
+					$this->handleFile($file, $filename);
 				}
 				$count++;
 			}
 
-			if(isset(getopt('w::')['w'])){
-				sleep(getopt('w::')['w']);
-			} else {
-				sleep(1);
-			}
+			sleep($this->waitTime);
 		}
 	}
 
-	protected function failedJob($file,$filename,$job){
-		ftruncate($file,0);
+	/**
+	 * @param $file
+	 * @param $filename
+	 *
+	 * @return bool
+	 */
+	protected function getLock($file, $filename) {
+		if ($file && filesize($filename) != 0) {
+			$lock = flock($file, LOCK_EX | LOCK_NB);
+		} else {
+			$lock = false;
+		}
+
+		return $lock;
+	}
+
+	/**
+	 * @param $file
+	 * @param $filename
+	 */
+	protected function handleFile($file, $filename) {
+		$content = fread($file, filesize($filename));
+		$job = yaml::decode($content);
+		try {
+			$task = unserialize($job['job']['class']);
+			if ($task->handle() === false) {
+				$this->failedJob($file, $filename, $job, 'Job Returned False');
+			} else {
+				$this->jobCompleted($file, $filename);
+			}
+		} catch(Error $exception){
+			$this->failedJob($file, $filename, $job, $exception->getMessage());
+		} catch(Exception $exception) {
+			$this->failedJob($file, $filename, $job, $exception->getMessage());
+		}
+	}
+
+	protected function failedJob($file, $filename, $job, $error) {
+		ftruncate($file, 0);
 		fclose($file);
-		$newName = substr_replace($filename,DS . 'failed',strrpos($filename,DS),0);
-		rename($filename,$newName);
-		f::write($newName, yaml::encode($job));
+		$newName = substr_replace($filename, DS . 'failed', strrpos($filename, DS), 0);
+		$job['error'] = $error;
+		$job['tried'] = date('c');
+		f::move($filename,$newName);
+		yaml::write($newName, $job);
+	}
+
+	/**
+	 * @param $file
+	 * @param $filename
+	 */
+	protected function jobCompleted($file, $filename) {
+		ftruncate($file, 0);
+		fclose($file);
+		f::remove($filename);
 	}
 }
