@@ -10,18 +10,20 @@ namespace lcd344\KirbyQueue;
 
 
 use c;
+use dir;
 use yaml;
-use folder;
+use f;
 use kirby;
 
 class Worker {
 
 	public function work() {
 
+		$folder = c::get('kirbyQueue.queue.folder', kirby::instance()->roots()->site() . DS . 'queue');
+
 		while (true) {
-			$folder = new folder(c::get('kirbyQueue.queue.folder', kirby::instance()->roots()->site() . DS . 'queue'));
-			$files = $folder->scan();
-			$count = 2;
+			$files = dir::read($folder);
+			$count = 3;
 			$lock = false;
 			while(!$lock && $count < count($files)+2) {
 				$filename = $folder . DS . $files[$count];
@@ -58,17 +60,14 @@ class Worker {
 			} else {
 				sleep(1);
 			}
-			exit();
 		}
 	}
 
 	protected function failedJob($file,$filename,$job){
-		$job['job']['status'] = 'failed';
 		ftruncate($file,0);
-		fwrite($file,yaml::encode($job));
 		fclose($file);
-		$newName = substr_replace($filename,'.failed.yml',strrpos($filename,'.'));
+		$newName = substr_replace($filename,DS . 'failed',strrpos($filename,DS),0);
 		rename($filename,$newName);
-		file_put_contents($newName,yaml::encode($job));
+		f::write($newName, yaml::encode($job));
 	}
 }
