@@ -89,8 +89,8 @@ class Worker {
 		ftruncate($file, 0);
 		fclose($file);
 		$newName = substr_replace($filename, DS . 'failed', strrpos($filename, DS), 0);
-		$job['error'] = $error;
-		$job['tried'] = date('c');
+		$job['job']['error'] = $error;
+		$job['job']['tried'] = date('c');
 		f::move($filename,$newName);
 		yaml::write($newName, $job);
 	}
