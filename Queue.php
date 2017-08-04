@@ -38,30 +38,28 @@ class Queue {
 
 	static public function dispatch($job,$data = null) {
 
+		$jobData = ['job' => [
+			'added' => date('c'),
+			'type' => 'object',
+			'class' => serialize($job)
+		]];
+
 		if(is_object($job)){
-			$data = ['job' => [
-				'added' => date('c'),
-				'type' => 'object',
-				'class' => serialize($job)
-			]];
+			$jobData['job']['class'] = serialize($job);
 		} else {
 			$class = new Job($job,$data);
-			$data = ['job' => [
-				'added' => date('c'),
-				'type' => 'function',
-				'class' => serialize($class)
-			]];
+			$jobData['job']['class'] = serialize($class);
 		}
 
 		$folder = c::get('kirbyQueue.queue.folder', kirby()->roots()->site() . DS . 'queue');
 		$file = $folder . DS . uniqid('job_') . '.yml';
 
 
-
-		if (! yaml::write($file, $data)) {
+		if (! yaml::write($file, $jobData)) {
 			throw new Error("Can't write to queue file");
 		}
 
 		return true;
 	}
+
 }

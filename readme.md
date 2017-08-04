@@ -102,9 +102,14 @@ The following options can be set in your `/site/config/config.php` file:
 ```php
 c::set('kirbyQueue.queue.folder', 'path/to/queue/folder'); // This will change the queue folder
 c::set('kirbyQueue.jobs.folder', 'path/to/jobs/folder'); // This will change the path to the jobs folder
+c::set('kirbyQueue.queue.wait',1); // this will set the amount of time to wait between getting new jobs
+c::set('kirbyQueue.queue.retries',3); // this will set the amount of times a job will be retired before it's sent to the failed folder
 ```
 
 ## Changelog
+
+**0.3.0**
+- Added a support to retry failed to jobs before sending to failed folder
 
 **0.2.0**
 
@@ -117,11 +122,8 @@ c::set('kirbyQueue.jobs.folder', 'path/to/jobs/folder'); // This will change the
 
 ## Todo
 
-- [ ] Improve worker code structure to different functions
-- [ ] Support job definition as functions
 - [ ] Add unit tests
-- [ ] Add jobs retry option
-- [ ] Add jobs widget
+- [ ] Add jobs widget to manage jobs
 
 ## Requirements
 

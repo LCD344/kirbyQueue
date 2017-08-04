@@ -19,11 +19,12 @@ class Worker {
 
 	protected $folder;
 	protected $waitTime;
+	protected $retries;
 
-	public function __construct($folder, $waitTime) {
-
+	public function __construct($folder, $waitTime,$retries) {
 		$this->folder = $folder;
 		$this->waitTime = $waitTime;
+		$this->retries = $retries;
 	}
 
 	public function work() {
@@ -39,7 +40,18 @@ class Worker {
 				$lock = $this->getLock($file, $filename);
 
 				if ($lock) {
-					$this->handleFile($file, $filename);
+					$tries = 0;
+
+					do{
+						$result = $this->handleFile($file, $filename);
+					} while($result !== true && ++$tries < $this->retries);
+
+					if($result === true){
+						$this->jobCompleted($file, $filename);
+					} else {
+						$job = $this->parseFile($file, $filename);
+						$this->failedJob($file, $filename, $job, $result);
+					}
 				}
 				$count++;
 			}
@@ -69,20 +81,20 @@ class Worker {
 	 * @param $filename
 	 */
 	protected function handleFile($file, $filename) {
-		$content = fread($file, filesize($filename));
-		$job = yaml::decode($content);
+		$job = $this->parseFile($file, $filename);
 		try {
 			$task = unserialize($job['job']['class']);
 			if ($task->handle() === false) {
-				$this->failedJob($file, $filename, $job, 'Job Returned False');
+				return 'Job Returned False';
 			} else {
-				$this->jobCompleted($file, $filename);
+				return true;
 			}
 		} catch(Error $exception){
-			$this->failedJob($file, $filename, $job, $exception->getMessage());
+			return $exception->getMessage();
 		} catch(Exception $exception) {
-			$this->failedJob($file, $filename, $job, $exception->getMessage());
+			return $exception->getMessage();
 		}
+
 	}
 
 	protected function failedJob($file, $filename, $job, $error) {
@@ -103,5 +115,19 @@ class Worker {
 		ftruncate($file, 0);
 		fclose($file);
 		f::remove($filename);
+	}
+
+	/**
+	 * @param $file
+	 * @param $filename
+	 *
+	 * @return array
+	 */
+	protected function parseFile($file, $filename) {
+		rewind($file);
+		$content = fread($file, filesize($filename));
+		$job = yaml::decode($content);
+
+		return $job;
 	}
 }
