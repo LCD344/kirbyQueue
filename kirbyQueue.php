@@ -1,11 +1,13 @@
 <?php
 
 
-if(class_exists('Panel')) require(__DIR__ . DS . 'panel' . DS . 'init.php');
-
 require_once 'Queue.php';
 require_once 'Worker.php';
 require_once 'Job.php';
+
+if(class_exists('Panel')) {
+	require(__DIR__ . DS . 'panel' . DS . 'widget.php');
+}
 
 $folder = new folder(c::get('kirbyQueue.jobs.folder', kirby::instance()->roots()->site() . DS . 'jobs'));
 $files = $folder->files();

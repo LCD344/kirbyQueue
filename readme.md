@@ -1,8 +1,8 @@
 # Kirby Boiler Readme
 
-![Version](https://img.shields.io/badge/version-0.2.0-green.svg) ![License](https://img.shields.io/badge/license-MIT-green.svg) ![Kirby Version](https://img.shields.io/badge/Kirby-2.2.4%2B-red.svg)
+![Version](https://img.shields.io/badge/version-0.5.0-green.svg) ![License](https://img.shields.io/badge/license-MIT-green.svg) ![Kirby Version](https://img.shields.io/badge/Kirby-2.2.4%2B-red.svg)
 
-*Version 0.2.0*
+*Version 0.5.0*
 
 This is a plugin to make a job queue for kirby CMS.
 
@@ -40,6 +40,8 @@ site/queue/failed/
 
 In the jobs directory you can create any job you would want as a php class, the important thing would be to have a handle method - as this will be the entrance point for the worker.
 
+if you want to have a custom title appear when the job fails, then define a getTitle function that will return that title.
+
 For example
 
 ```php
@@ -54,6 +56,10 @@ class Job1 {
   public function handle(){
     sleep(1);
     echo $this->id . PHP_EOL;
+  }
+  
+  public function getTitle(){
+    return 'job title';
   }
 }
 ```
@@ -90,10 +96,12 @@ or if the job was defined as a function you can do
 \lcd344\KirbyQueue\Queue::dispatch('job1',[
   10,
   'test'
-]);
+],'Job Title');
 ```
 
 the order of variables in the array corresponds to the functions variables as the function uses call_user_func_array to run it.
+
+The job title will show in the panel in case the job fails.
 
 ## Options
 
@@ -107,6 +115,10 @@ c::set('kirbyQueue.queue.retries',3); // this will set the amount of times a job
 ```
 
 ## Changelog
+
+**0.5.0**
+- Added a widget that shows failed jobs and allows to retry or to cancel them
+- Added support for job title to show when the job is in the failed list
 
 **0.3.0**
 - Added a support to retry failed to jobs before sending to failed folder
@@ -123,7 +135,6 @@ c::set('kirbyQueue.queue.retries',3); // this will set the amount of times a job
 ## Todo
 
 - [ ] Add unit tests
-- [ ] Add jobs widget to manage jobs
 
 ## Requirements
 

@@ -28,6 +28,5 @@ class Job extends Obj {
 		}
 
 		return call_user_func_array(Queue::get($this->function),$this->variables);
-
 	}
 }
