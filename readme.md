@@ -1,4 +1,4 @@
-# Kirby Boiler Readme
+# Kirby Queue
 
 ![Version](https://img.shields.io/badge/version-1.0.0-green.svg) ![License](https://img.shields.io/badge/license-MIT-green.svg) ![Kirby Version](https://img.shields.io/badge/Kirby-2.2.4%2B-red.svg)
 
