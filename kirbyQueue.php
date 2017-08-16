@@ -9,7 +9,7 @@ if(class_exists('Panel')) {
 	require(__DIR__ . DS . 'panel' . DS . 'widget.php');
 }
 
-$folder = new folder(c::get('kirbyQueue.jobs.folder', kirby::instance()->roots()->site() . DS . 'jobs'));
+$folder = new folder(lcd344\KirbyQueue\Queue::jobsPath());
 $files = $folder->files();
 foreach ($files as $file){
 	require_once $file;

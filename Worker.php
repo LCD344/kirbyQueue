@@ -40,18 +40,7 @@ class Worker {
 				$lock = $this->getLock($file, $filename);
 
 				if ($lock) {
-					$tries = 0;
-
-					do{
-						$result = $this->handleFile($file, $filename);
-					} while($result !== true && ++$tries < $this->retries);
-
-					if($result === true){
-						$this->jobCompleted($file, $filename);
-					} else {
-						$job = $this->parseFile($file, $filename);
-						$this->failedJob($file, $filename, $job, $result);
-					}
+					$this->workOne($file, $filename);
 				}
 				$count++;
 			}
@@ -129,5 +118,25 @@ class Worker {
 		$job = yaml::decode($content);
 
 		return $job;
+	}
+
+	/**
+	 * @param $file
+	 * @param $filename
+	 */
+	public function workOne($file, $filename) {
+		$tries = 0;
+
+		do {
+			$result = $this->handleFile($file, $filename);
+			echo $tries;
+		} while ($result !== true && ++$tries < $this->retries);
+
+		if ($result === true) {
+			$this->jobCompleted($file, $filename);
+		} else {
+			$job = $this->parseFile($file, $filename);
+			$this->failedJob($file, $filename, $job, $result);
+		}
 	}
 }

@@ -27,6 +27,15 @@ class Queue {
 	 * @param  Callable  Closure with the action
 	 */
 
+	public static function jobsPath(){
+		return c::get('kirbyQueue.jobs.folder', kirby::instance()->roots()->site() . DS . 'jobs');
+	}
+
+
+	public static function queuePath(){
+		return c::get('kirbyQueue.queue.folder', kirby::instance()->roots()->site() . DS . 'queue');
+	}
+
 	public static function define($name, $action) {
 		static::$actions[$name] = $action;
 	}
@@ -41,7 +50,7 @@ class Queue {
 	}
 
 	public static function count() {
-		$folder = new folder(c::get('kirbyQueue.queue.folder', kirby::instance()->roots()->site() . DS . 'queue'));
+		$folder = new folder(static::queuePath());
 		$files = $folder->files();
 
 		return count($files);
@@ -49,7 +58,7 @@ class Queue {
 
 	public static function failedJobs() {
 		$failedJobs = [];
-		$folder = new folder(c::get('kirbyQueue.queue.folder', kirby::instance()->roots()->site() . DS . 'queue') . DS . "failed");
+		$folder = new folder(static::queuePath() . DS . "failed");
 
 		foreach ($folder->files() as $file) {
 			$content = file_get_contents($file);
@@ -62,11 +71,10 @@ class Queue {
 		return $failedJobs;
 	}
 
-	static public function dispatch($job, $data = null,$title = false) {
+	static public function dispatch($job, $data = [],$title = false) {
 
 		$jobData = ['job' => [
 			'added' => date('c'),
-			'type' => 'object',
 		]];
 
 		if (is_object($job)) {
@@ -86,7 +94,7 @@ class Queue {
 			}
 		}
 
-		$folder = c::get('kirbyQueue.queue.folder', kirby()->roots()->site() . DS . 'queue');
+		$folder = static::queuePath();
 		$file = $folder . DS . uniqid('job_') . '.yml';
 
 
@@ -98,12 +106,12 @@ class Queue {
 	}
 
 	static public function remove($file){
-		f::remove(c::get('kirbyQueue.queue.folder', kirby::instance()->roots()->site() . DS . 'queue') . DS . "failed" . DS . $file);
+		f::remove(static::queuePath() . DS . "failed" . DS . $file);
 	}
 
 	static public function retry($file){
-		$old = c::get('kirbyQueue.queue.folder', kirby::instance()->roots()->site() . DS . 'queue') . DS . "failed" . DS . $file;
-		$new = c::get('kirbyQueue.queue.folder', kirby::instance()->roots()->site() . DS . 'queue') . DS  . $file;
+		$old = static::queuePath() . DS . "failed" . DS . $file;
+		$new = static::queuePath() . DS  . $file;
 		f::move($old,$new);
 	}
 }

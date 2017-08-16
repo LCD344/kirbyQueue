@@ -1,8 +1,8 @@
 # Kirby Boiler Readme
 
-![Version](https://img.shields.io/badge/version-0.5.0-green.svg) ![License](https://img.shields.io/badge/license-MIT-green.svg) ![Kirby Version](https://img.shields.io/badge/Kirby-2.2.4%2B-red.svg)
+![Version](https://img.shields.io/badge/version-1.0.0-green.svg) ![License](https://img.shields.io/badge/license-MIT-green.svg) ![Kirby Version](https://img.shields.io/badge/Kirby-2.2.4%2B-red.svg)
 
-*Version 0.5.0*
+*Version 1.0.0*
 
 This is a plugin to make a job queue for kirby CMS.
 
@@ -116,6 +116,9 @@ c::set('kirbyQueue.queue.retries',3); // this will set the amount of times a job
 
 ## Changelog
 
+**1.0.0**
+- Added testing
+
 **0.5.0**
 - Added a widget that shows failed jobs and allows to retry or to cancel them
 - Added support for job title to show when the job is in the failed list
@@ -131,10 +134,6 @@ c::set('kirbyQueue.queue.retries',3); // this will set the amount of times a job
 
 **0.1.0**
 - Initial release
-
-## Todo
-
-- [ ] Add unit tests
 
 ## Requirements
 

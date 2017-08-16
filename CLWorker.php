@@ -1,5 +1,7 @@
 <?php
 
+use lcd344\KirbyQueue\Queue;
+
 define('DS', DIRECTORY_SEPARATOR);
 
 
@@ -16,7 +18,7 @@ $kirby->extensions();
 $kirby->models();
 $kirby->plugins();
 
-$folder = c::get('kirbyQueue.queue.folder', $kirby->roots()->site() . DS . 'queue');
+$folder = Queue::queuePath();
 $waitTime = c::get('kirbyQueue.queue.wait',1);
 if(isset(getopt('w::')['w'])){
 	$waitTime = getopt('w::')['w'];
