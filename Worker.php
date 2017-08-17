@@ -129,7 +129,6 @@ class Worker {
 
 		do {
 			$result = $this->handleFile($file, $filename);
-			echo $tries;
 		} while ($result !== true && ++$tries < $this->retries);
 
 		if ($result === true) {

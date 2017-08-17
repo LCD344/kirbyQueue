@@ -76,6 +76,10 @@ Alternatively you can define a job as a function as in
 
 then to run the worker you just need to run `site/plugins/kirbyQueue/CLWorker.php` from commandline.
 
+The commandline will automatically load the config.php file, if you need to load any other config files, then you can pass it the name of the server using the --server flag. For example if you need a config.example.com.php then run the next command
+
+`php site/plugins/kirbyQueue/CLWorker.php --server=example.com`
+
 This will create one worker that would work forever. This queue supports multiple workers working at the same time using the flock command.
 
 it is recommended to run the workers as daemon. Or using a tool similar to [supervisor](http://supervisord.org/).
