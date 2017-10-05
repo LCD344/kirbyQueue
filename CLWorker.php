@@ -1,5 +1,6 @@
 <?php
 
+use function foo\func;
 use lcd344\KirbyQueue\Queue;
 
 define('DS', DIRECTORY_SEPARATOR);
@@ -35,5 +36,9 @@ if(isset(getopt('',['retries:'])['retries'])){
 	$retries = getopt('retries::')['retries'];
 }
 
+Queue::define('failure',function (){
+	return false;
+});
+Queue::dispatch('failure');
 $worker = new lcd344\KirbyQueue\Worker($folder,$waitTime,$retries);
 $worker->work();

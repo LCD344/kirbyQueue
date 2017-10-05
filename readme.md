@@ -74,7 +74,7 @@ Alternatively you can define a job as a function as in
 
 
 ```php
-\lcd344\KirbyQueue\Queue::define('job1', function($sleep,$wait) {
+\lcd344\KirbyQueue\Queue::define('job1', function($sleep,$text) {
   sleep($sleep);
   echo $text;
 });
