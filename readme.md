@@ -1,8 +1,8 @@
 # Kirby Queue
 
-![Version](https://img.shields.io/badge/version-1.0.0-green.svg) ![License](https://img.shields.io/badge/license-MIT-green.svg) ![Kirby Version](https://img.shields.io/badge/Kirby-2.2.4%2B-red.svg)
+![Version](https://img.shields.io/badge/version-1.1.0-green.svg) ![License](https://img.shields.io/badge/license-MIT-green.svg) ![Kirby Version](https://img.shields.io/badge/Kirby-2.2.4%2B-red.svg)
 
-*Version 1.0.0*
+*Version 1.1.0*
 
 This is a plugin to make a job queue for kirby CMS.
 
@@ -42,6 +42,8 @@ In the jobs directory you can create any job you would want as a php class, the 
 
 if you want to have a custom title appear when the job fails, then define a getTitle function that will return that title.
 
+Additionally you can have a special onFail method that will run for the job once it's moved to the failed jobs directory (after retrying x times). The method will receive a string with the reason for failure
+
 For example
 
 ```php
@@ -60,6 +62,10 @@ class Job1 {
   
   public function getTitle(){
     return 'job title';
+  }
+  
+  public function onFail($message){
+    echo $message;
   }
 }
 ```
@@ -113,12 +119,24 @@ The following options can be set in your `/site/config/config.php` file:
 
 ```php
 c::set('kirbyQueue.queue.folder', 'path/to/queue/folder'); // This will change the queue folder
+
 c::set('kirbyQueue.jobs.folder', 'path/to/jobs/folder'); // This will change the path to the jobs folder
+
 c::set('kirbyQueue.queue.wait',1); // this will set the amount of time to wait between getting new jobs
+
 c::set('kirbyQueue.queue.retries',3); // this will set the amount of times a job will be retired before it's sent to the failed folder
+
+c::set('kirbyQueue.worker.onFail', function ($task,$message) {
+    // notify that tasks are failing
+}); // this function will be called after any task has failed, it will recieve the failed task, and the error message. 
+
 ```
 
 ## Changelog
+
+**1.1.0**
+- Added on fail function
+
 
 **1.0.0**
 - Added testing

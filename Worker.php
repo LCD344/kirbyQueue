@@ -9,6 +9,7 @@
 namespace lcd344\KirbyQueue;
 
 
+use c;
 use Error;
 use Exception;
 use folder;
@@ -71,17 +72,29 @@ class Worker {
 	 */
 	protected function handleFile($file, $filename) {
 		$job = $this->parseFile($file, $filename);
+		$task = unserialize($job['job']['class']);
 		try {
-			$task = unserialize($job['job']['class']);
 			if ($task->handle() === false) {
-				return 'Job Returned False';
+				return [
+					'result' => 'Job Returned False',
+					'task' => $task
+				];
 			} else {
-				return true;
+				return [
+					'result' => true,
+					'task' => $task
+				];
 			}
 		} catch(Error $exception){
-			return $exception->getMessage();
+			return [
+				'result' =>  $exception->getMessage(),
+				'task' => $task
+			];
 		} catch(Exception $exception) {
-			return $exception->getMessage();
+			return [
+				'result' =>  $exception->getMessage(),
+				'task' => $task
+			];
 		}
 
 	}
@@ -129,13 +142,26 @@ class Worker {
 
 		do {
 			$result = $this->handleFile($file, $filename);
-		} while ($result !== true && ++$tries < $this->retries);
+		} while ($result['result'] !== true && ++$tries < $this->retries);
 
-		if ($result === true) {
+		if ($result['result'] === true) {
 			$this->jobCompleted($file, $filename);
 		} else {
 			$job = $this->parseFile($file, $filename);
-			$this->failedJob($file, $filename, $job, $result);
+			$this->failedJob($file, $filename, $job, $result['result']);
+			$this->onFail($result['task'],$result['result']);
+		}
+	}
+
+	protected function onFail($task, $result){
+		if(method_exists($task,'onFail')){
+			$task->onFail($result);
+		}
+
+		$failFunction = c::get('kirbyQueue.worker.onFail', false);
+
+		if(is_callable($failFunction)){
+			return call_user_func($failFunction,$task,$result);
 		}
 	}
 }

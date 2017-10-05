@@ -1,5 +1,6 @@
 <?xml version="1.0"?>
-<phpunit colors="true">
+<phpunit colors="true"
+         bootstrap="../../../kirby/bootstrap.php">
     <testsuites>
         <testsuite name="kirbyQueue">
             <directory suffix="test.php">tests</directory>
